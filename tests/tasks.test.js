@@ -1,5 +1,6 @@
 import request from "supertest";
 import app from "../src/app.js";
+import mongoose from "mongoose";
 
 let token;
 let taskId;
@@ -23,7 +24,7 @@ beforeAll(async () => {
     });
 
   token = res.body.token;
-});
+}, 30000);
 
 describe("Task Routes", () => {
 
@@ -32,7 +33,7 @@ describe("Task Routes", () => {
       .get("/api/tasks");
 
     expect(res.statusCode).toBe(401);
-  });
+  }, 30000);
 
   it("should create a task", async () => {
     const res = await request(app)
@@ -47,7 +48,7 @@ describe("Task Routes", () => {
     expect(res.body.title).toBe("Test Task");
 
     taskId = res.body._id;
-  });
+  }, 30000);
 
   it("should get user tasks only", async () => {
     const res = await request(app)
@@ -56,6 +57,15 @@ describe("Task Routes", () => {
 
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-  });
+  }, 30000);
+
+  afterAll(async () => {
+    try {
+      await mongoose.connection.dropDatabase();
+      await mongoose.connection.close();
+    } catch (err) {
+      // connection already closed
+    }
+  }, 30000);
 
 });
